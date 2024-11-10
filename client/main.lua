@@ -29,6 +29,26 @@ end
 
 exports('AddMenuItem', AbdelRMBUI.AddMenuItem)
 
+function AbdelRMBUI.AddMenuInput(menuName, label, defaultText, inputType, callback)
+    local menu = AbdelRMBUI.Menus[menuName]
+    if menu then
+        callbackCounter = callbackCounter + 1
+        AbdelRMBUI.Callbacks[callbackCounter] = callback
+
+        local inputItem = { 
+            type = "input", 
+            label = label, 
+            defaultText = defaultText or "",
+            inputType = inputType or "text",
+            callbackId = callbackCounter 
+        }
+        table.insert(menu.items, inputItem)
+    end
+end
+
+exports('AddMenuInput', AbdelRMBUI.AddMenuInput)
+
+
 function AbdelRMBUI.OpenMenu(prefix, name)
     local fullName = prefix .. "_" .. name
     local menu = AbdelRMBUI.Menus[fullName]
@@ -58,6 +78,16 @@ end
 
 exports('CloseMenu', AbdelRMBUI.CloseMenu)
 
+function AbdelRMBUI.ClearMenu(menuName)
+    local menu = AbdelRMBUI.Menus[menuName]
+    if menu then
+        -- Vider la liste des items du menu
+        menu.items = {}
+    end
+end
+
+exports('ClearMenu', AbdelRMBUI.ClearMenu)
+
 
 RegisterNUICallback("selectItem", function(data)
     local menuName = data.menuName
@@ -73,12 +103,17 @@ RegisterNUICallback("selectItem", function(data)
     end
 end)
 
-function AbdelRMBUI.ClearMenu(menuName)
+RegisterNUICallback("inputChange", function(data)
+    local menuName = data.menuName
     local menu = AbdelRMBUI.Menus[menuName]
     if menu then
-        -- Vider la liste des items du menu
-        menu.items = {}
+        local inputItem = menu.items[data.index + 1]
+        if inputItem and inputItem.callbackId then
+            local callback = AbdelRMBUI.Callbacks[inputItem.callbackId]
+            if callback then
+                callback(data.value)
+            end
+        end
     end
-end
+end)
 
-exports('ClearMenu', AbdelRMBUI.ClearMenu)
