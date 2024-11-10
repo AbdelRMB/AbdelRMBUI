@@ -35,7 +35,6 @@ window.addEventListener('message', function(event) {
                 input.value = item.defaultText || '';
                 input.dataset.index = index;
 
-                // Gérer la saisie utilisateur
                 input.addEventListener('change', (e) => {
                     sendNuiRequest('inputChange', {
                         menuName: currentMenuName,

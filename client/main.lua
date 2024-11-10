@@ -81,7 +81,6 @@ exports('CloseMenu', AbdelRMBUI.CloseMenu)
 function AbdelRMBUI.ClearMenu(menuName)
     local menu = AbdelRMBUI.Menus[menuName]
     if menu then
-        -- Vider la liste des items du menu
         menu.items = {}
     end
 end
