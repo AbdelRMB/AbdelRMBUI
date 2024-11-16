@@ -19,7 +19,7 @@ end
 
 exports('CreateMenu', AbdelRMBUI.CreateMenu)
 
-function AbdelRMBUI.AddMenuItem(menuName, label, callback)
+function AbdelRMBUI.Button(menuName, label, callback)
     local menu = AbdelRMBUI.Menus[menuName]
     if menu then
         callbackCounter = callbackCounter + 1
@@ -32,7 +32,7 @@ end
 
 exports('AddMenuItem', AbdelRMBUI.AddMenuItem)
 
-function AbdelRMBUI.AddMenuInput(menuName, label, defaultText, inputType, callback)
+function AbdelRMBUI.Input(menuName, label, defaultText, inputType, callback)
     local menu = AbdelRMBUI.Menus[menuName]
     if menu then
         callbackCounter = callbackCounter + 1
