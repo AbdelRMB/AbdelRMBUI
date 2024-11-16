@@ -1,3 +1,4 @@
+exports("AbdelRMBUI", AbdelRMBUI)
 AbdelRMBUI = AbdelRMBUI or {}
 AbdelRMBUI.Menus = {}
 AbdelRMBUI.Callbacks = {}
