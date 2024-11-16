@@ -70,17 +70,6 @@ end
 
 exports('OpenMenu', AbdelRMBUI.OpenMenu)
 
-
-function AbdelRMBUI.CloseMenu(prefix, name)
-    local fullName = prefix .. "_" .. name
-    local menu = AbdelRMBUI.Menus[fullName]
-    menu.isOpen = false
-    SetNuiFocus(false, false)
-    SendNUIMessage({ action = "closeMenu" })
-end
-
-exports('CloseMenu', AbdelRMBUI.CloseMenu)
-
 function AbdelRMBUI.ClearMenu(menuName)
     local menu = AbdelRMBUI.Menus[menuName]
     if menu then
@@ -119,3 +108,18 @@ RegisterNUICallback("inputChange", function(data)
     end
 end)
 
+RegisterNUICallback('releaseFocus', function(data, cb)
+    SetNuiFocus(false, false) 
+    cb('ok')
+end)
+
+RegisterNUICallback('goBackToParentMenu', function(data, cb)
+    local parentMenu = GetParentMenu(data.menuName) 
+    if parentMenu then
+        SendNUIMessage({
+            action = 'goBackToParentMenu',
+            parentMenu = parentMenu
+        })
+    end
+    cb('ok')
+end)
