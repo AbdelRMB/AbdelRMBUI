@@ -1,8 +1,10 @@
-exports("AbdelRMBUI", AbdelRMBUI)
 AbdelRMBUI = AbdelRMBUI or {}
 AbdelRMBUI.Menus = {}
 AbdelRMBUI.Callbacks = {}
 local callbackCounter = 0
+exports("GetAbdelRMBUI", function()
+    return AbdelRMBUI
+end)
 
 function AbdelRMBUI.CreateMenu(prefix, name, title, parent)
     local fullName = prefix .. "_" .. name
