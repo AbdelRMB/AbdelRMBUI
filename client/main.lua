@@ -70,6 +70,16 @@ end
 
 exports('OpenMenu', AbdelRMBUI.OpenMenu)
 
+function AbdelRMBUI.CloseMenu(prefix, name)
+    local fullName = prefix .. "_" .. name
+    local menu = AbdelRMBUI.Menus[fullName]
+    menu.isOpen = false
+    SetNuiFocus(false, false)
+    SendNUIMessage({ action = "closeMenu" })
+end
+
+exports('CloseMenu', AbdelRMBUI.CloseMenu)
+
 function AbdelRMBUI.ClearMenu(menuName)
     local menu = AbdelRMBUI.Menus[menuName]
     if menu then
