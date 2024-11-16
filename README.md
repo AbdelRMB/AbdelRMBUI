@@ -4,7 +4,7 @@
 ![Author](https://img.shields.io/badge/author-AbdelRMB-green)
 
 ## 🚀 Introduction
-The **AbdelRMBUI Library** is a flexible and customizable menu management system for FiveM servers, developed using **Lua** and **Vue.js**. This library helps you easily integrate interactive menus in your FiveM scripts, with support for player information display and financial data.
+The **AbdelRMBUI Library** is a flexible and customizable menu management system for FiveM servers, developed using **Lua** and **Vue.js**. This library helps you easily integrate interactive menus in your FiveM scripts, with support for player information display and financial data and others.
 
 ## 🛠️ Features
 - Built using **Lua** and **Vue.js** for a seamless integration.
