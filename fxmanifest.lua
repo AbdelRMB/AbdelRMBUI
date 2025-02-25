@@ -5,26 +5,21 @@ fx_version 'cerulean'
 game 'gta5'
 
 author 'AbdelRMB'
+description 'Bibliothèque de menu FiveM similaire à RageUI'
 version '1.0.0'
-description 'Bibliothèque NUI pour les menus'
 
 client_scripts {
-    'client/main.lua',
-    'client/utils.lua'
-}
-
-exports {
-    'CreateMenu',
-    'AddItem',
-    'ShowMenu',
-    'HideMenu'
+    'client.lua',
+    'AbdelRMBUIV2.lua',
+    'items/*.lua'
 }
 
 files {
     'html/index.html',
     'html/style.css',
-    'html/script.js',
-    'html/img/banner.png'
+    'html/script.js'
 }
 
 ui_page 'html/index.html'
+
+lua54 'yes'

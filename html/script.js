@@ -1,129 +1,173 @@
-new Vue({
-    el: '#app',
-    data: {
-        isMenuOpen: false,
-        currentMenuName: null,
-        currentParentMenu: null,
-        menuTitle: '',
-        items: []
-    },
-    methods: {
-        sendNuiRequest(endpoint, data) {
-            fetch(`https://${GetParentResourceName()}/${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            }).catch((error) => {
-                console.error(`Erreur lors de l'appel à ${endpoint}:`, error);
-            });
-        },
-        openMenu(data) {
-            this.isMenuOpen = true;
-            this.currentMenuName = data.menuName;
-            this.currentParentMenu = data.parentMenu || null;
-            this.menuTitle = data.menuTitle;
-            this.items = data.items;
-            this.renderMenu();
-        },
-        closeMenu() {
-            this.isMenuOpen = false;
-            this.currentMenuName = null;
-            this.currentParentMenu = null;
-        
-            document.getElementById('app').style.display = 'none';
-        
-            this.sendNuiRequest('closeMenu', {});
-        
-            fetch(`https://${GetParentResourceName()}/releaseFocus`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
-            });
-        },
-        goBackToParentMenu() {
-            this.sendNuiRequest('goBackToParentMenu', {
-                menuName: this.currentMenuName
-            });
-        },
-        renderMenu() {
-            const app = document.getElementById('app');
-            app.innerHTML = '';
-            app.style.display = 'block';
+let selectedIndex = 0;
 
-            const menu = document.createElement('div');
-            menu.className = 'menu';
+window.addEventListener("message", function (event) {
+    if (!event.data || !event.data.type) {
+        console.warn("⚠ Événement reçu sans `data.type`, ignoré :", event);
+        return;
+    }
 
-            const menuTitle = document.createElement('h2');
-            menuTitle.className = 'menuTitle';
-            menuTitle.innerText = this.menuTitle;
-            menu.appendChild(menuTitle);
+    if (event.data.type === "openMenu") {
 
-            const menuItems = document.createElement('ul');
-            menuItems.className = 'menuItems';
-            menuItems.id = 'menuItems';
-            
-            this.items.forEach((item, index) => {
-                if (item.type === 'input') {
-                    const inputDiv = document.createElement('div');
-                    inputDiv.className = 'menu-item';
+        let menuContainer = document.getElementById("menuContainer");
+        let buttonsContainer = document.getElementById("menuButtons");
 
-                    const label = document.createElement('label');
-                    label.innerText = item.label;
+        menuContainer.style.visibility = "visible";
+        menuContainer.style.opacity = "1";
+        buttonsContainer.innerHTML = "";
 
-                    const input = document.createElement('input');
-                    input.type = item.inputType || 'text';
-                    input.value = item.defaultText || '';
-                    input.dataset.index = index;
+        selectedIndex = 0;
 
-                    input.addEventListener('change', (e) => {
-                        this.sendNuiRequest('inputChange', {
-                            menuName: this.currentMenuName,
-                            index: index,
-                            value: e.target.value
-                        });
-                    });
+        event.data.buttons.forEach((button, index) => {
+            let btn = null;  // Initialise btn comme null
 
-                    inputDiv.appendChild(label);
-                    inputDiv.appendChild(input);
-                    menuItems.appendChild(inputDiv);
-                } else {
-                    const listItem = document.createElement('li');
-                    listItem.innerText = item.label;
-                    listItem.addEventListener('click', () => {
-                        this.sendNuiRequest('selectItem', {
-                            index: index,
-                            menuName: this.currentMenuName
-                        });
-                    });
-                    menuItems.appendChild(listItem);
-                }
-            });
+            if (typeof button === "string") {
+                btn = document.createElement("button");
+                btn.innerText = button;
+                btn.classList.add("menu-button", "menu-item");
+                if (index === 0) btn.classList.add("selected");
+            } else if (button.type === "checkbox") {
+                btn = document.createElement("label");
+                btn.classList.add("menu-item", "checkbox");
+                btn.innerHTML = `<span>${button.label}</span> <input type="checkbox" id="cb${index}" ${button.state ? "checked" : ""}>`;
+            } else if (button.type === "slider") {
+                btn = document.createElement("input");
+                btn.type = "range";
+                btn.min = button.min;
+                btn.max = button.max;
+                btn.value = button.value;
+                btn.step = button.step;
+                btn.id = `slider${index}`;
+                btn.classList.add("menu-item", "slider");
+                btn.setAttribute("aria-label", button.label);
+                btn.disabled = true;
+            } else if (button.type === "list") {
+                btn = document.createElement("select");
+                btn.id = `list${index}`;
+                btn.classList.add("menu-item", "select");
+                btn.disabled = true;
 
-            if (this.currentParentMenu) {
-                print('submenu');
-            } else {
-                const navButton = document.createElement('li');
-                navButton.className = 'navButton';
-                navButton.innerText = 'Quitter';
-                navButton.addEventListener('click', () => {
-                    this.closeMenu();
+                button.options.forEach(opt => {
+                    let option = document.createElement("option");
+                    option.text = opt;
+                    btn.add(option);
                 });
-                menuItems.appendChild(navButton);
+
+                btn.setAttribute("aria-label", button.label);
+            } else if (button.type === "input") {
+                btn = document.createElement("input");
+                btn.type = "text";
+                btn.id = `input${index}`;
+                btn.value = button.text;
+                btn.classList.add("menu-item", "input");
+                btn.setAttribute("aria-label", button.label);
+                btn.disabled = true;
             }
 
-            menu.appendChild(menuItems);
-            app.appendChild(menu);
-        }
-    },
-    mounted() {
-        window.addEventListener('message', (event) => {
-            const data = event.data;
-
-            if (data.action === 'openMenu') {
-                this.openMenu(data);
-            } else if (data.action === 'closeMenu') {
-                this.closeMenu();
+            // ✅ Vérification avant d'ajouter l'élément
+            if (btn !== null) {
+                buttonsContainer.appendChild(btn);
+            } else {
+                console.warn(`⚠ Échec de la création du bouton à l'index ${index} :`, button);
             }
         });
+
+
+        fetch(`https://${GetParentResourceName()}/setNuiFocus`, {
+            method: "POST",
+            body: JSON.stringify({ focus: true, cursor: false }),
+            headers: { "Content-Type": "application/json" }
+        });
+    }
+
+    if (event.data.type === "closeMenu") {
+        closeMenu();
+    }
+});
+
+
+document.addEventListener("keydown", function (event) {
+    let items = document.querySelectorAll(".menu-item");
+    if (items.length === 0) return;
+
+    let activeElement = document.activeElement;
+
+    if (activeElement.tagName === "INPUT" || activeElement.tagName === "SELECT") {
+        if (event.key === "Enter" || event.key === "Backspace") {
+
+            activeElement.disabled = true;
+            activeElement.blur();
+
+            return;
+        }
+        return;
+    }
+
+    items[selectedIndex].classList.remove("selected");
+
+    if (event.key === "ArrowUp") {
+        selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+    }
+    else if (event.key === "ArrowDown") {
+        selectedIndex = (selectedIndex + 1) % items.length;
+    }
+
+    items[selectedIndex].classList.add("selected");
+
+    let selectedItem = items[selectedIndex];
+
+    if (event.key === "Enter") {
+        let selectedOption = selectedItem.innerText || selectedItem.value;
+
+        if (selectedItem.classList.contains("checkbox")) {
+            let checkbox = selectedItem.querySelector("input[type='checkbox']");
+            checkbox.checked = !checkbox.checked;
+        }
+        if (selectedItem.tagName === "BUTTON") {
+            fetch(`https://${GetParentResourceName()}/selectButton`, {
+                method: "POST",
+                body: JSON.stringify({ menuId: "menu_test", index: selectedIndex + 1 }),
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+        else if (selectedItem.tagName === "INPUT" || selectedItem.tagName === "SELECT") {
+            selectedItem.disabled = false;
+            selectedItem.focus();
+        }
+    }
+
+    else if (event.key === "Backspace") {
+        closeMenu();
+    }
+});
+
+
+function closeMenu() {
+    let menuContainer = document.getElementById("menuContainer");
+
+    if (!menuContainer) {
+        console.warn("⚠ Impossible de fermer le menu, `menuContainer` non trouvé.");
+        return;
+    }
+
+    menuContainer.style.visibility = "hidden";
+    menuContainer.style.opacity = "0";
+
+    fetch(`https://${GetParentResourceName()}/setNuiFocus`, {
+        method: "POST",
+        body: JSON.stringify({ focus: false, cursor: false }),
+        headers: { "Content-Type": "application/json" }
+    });
+
+    fetch(`https://${GetParentResourceName()}/closeMenu`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    });
+}
+
+
+
+window.addEventListener("message", function (event) {
+    if (event.data.type === "closeMenu") {
+        closeMenu();
     }
 });
