@@ -1,3 +1,6 @@
+client_script '@yarn/client.lua'
+server_script '@yarn/server.lua'
+
 fx_version 'cerulean'
 game 'gta5'
 
